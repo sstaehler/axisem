@@ -81,9 +81,9 @@ subroutine glob_stiffness_mono_4(glob_stiffness,u)
   integer :: ielem
 
   !$omp do private(X1, X2, X3, X4,     &
-  !$omp         S1s, S2s, S1z, S2z, &
-  !$omp         V1, V2, V3, V4,     &
-  !$omp         us, uz, uz0)
+  !$omp            S1s, S2s, S1z, S2z, &
+  !$omp            V1, V2, V3, V4,     &
+  !$omp            us, uz, uz0)
   do ielem = 1, nel_solid
 
      us(:,:) = u(:,:,ielem,1)
@@ -163,7 +163,7 @@ end subroutine glob_stiffness_mono_4
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_stiffness_mono_generic(glob_stiffness,u)
+subroutine glob_stiffness_mono_generic(glob_stiffness,u)
 
   use data_mesh, only: npol, nel_solid
   
@@ -287,7 +287,7 @@ end subroutine glob_stiffness_mono_generic
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_anel_stiffness_mono(glob_stiffness, R, R_cg, cg)
+subroutine glob_anel_stiffness_mono(glob_stiffness, R, R_cg, cg)
   use data_mesh,    only: npol
   
   real(kind=realkind), intent(inout) :: glob_stiffness(0:,0:,:,:)
@@ -309,7 +309,7 @@ end subroutine glob_anel_stiffness_mono
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_anel_stiffness_mono_generic(glob_stiffness, R)
+subroutine glob_anel_stiffness_mono_generic(glob_stiffness, R)
 
   use attenuation,  only: n_sls_attenuation
   use data_mesh,    only: npol, nel_solid
@@ -339,6 +339,16 @@ pure subroutine glob_anel_stiffness_mono_generic(glob_stiffness, R)
   
   integer :: ielem, j
 
+  !$omp do private(loc_stiffness_s, loc_stiffness_z, &
+  !$omp            r1, r2, r3, r5, &
+  !$omp            yl, v_s_etal, v_s_xil, v_z_etal, v_z_xil, &
+  !$omp            S1s, S2s, S1z, S2z, &
+  !$omp            X1, X2, X3, X4, &
+  !$omp            y0l, &
+  !$omp            v0_s_etal, v0_s_xil, &
+  !$omp            v0_z_etal, v0_z_xil, &
+  !$omp            V1, V2, V3, V4,&
+  !$omp            j)
   do ielem = 1, nel_solid
 
      yl(:,:) = Y(:,:,ielem)
@@ -406,12 +416,13 @@ pure subroutine glob_anel_stiffness_mono_generic(glob_stiffness, R)
      glob_stiffness(0:npol,0:npol,ielem,3) = &
             glob_stiffness(0:npol,0:npol,ielem,3) - loc_stiffness_z
   enddo
+  !$omp end do
 
 end subroutine glob_anel_stiffness_mono_generic
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_anel_stiffness_mono_4(glob_stiffness, R)
+subroutine glob_anel_stiffness_mono_4(glob_stiffness, R)
 
   use attenuation,  only: n_sls_attenuation
   use data_mesh,    only: nel_solid
@@ -441,6 +452,16 @@ pure subroutine glob_anel_stiffness_mono_4(glob_stiffness, R)
   
   integer :: ielem, j
 
+  !$omp do private(loc_stiffness_s, loc_stiffness_z, &
+  !$omp            r1, r2, r3, r5, &
+  !$omp            yl, v_s_etal, v_s_xil, v_z_etal, v_z_xil, &
+  !$omp            S1s, S2s, S1z, S2z, &
+  !$omp            X1, X2, X3, X4, &
+  !$omp            y0l, &
+  !$omp            v0_s_etal, v0_s_xil, &
+  !$omp            v0_z_etal, v0_z_xil, &
+  !$omp            V1, V2, V3, V4,&
+  !$omp            j)
   do ielem = 1, nel_solid
 
      yl(:,:) = Y(:,:,ielem)
@@ -508,12 +529,13 @@ pure subroutine glob_anel_stiffness_mono_4(glob_stiffness, R)
      glob_stiffness(0:4,0:4,ielem,3) = &
             glob_stiffness(0:4,0:4,ielem,3) - loc_stiffness_z
   enddo
+  !$omp end do
 
 end subroutine glob_anel_stiffness_mono_4
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_anel_stiffness_mono_cg4(glob_stiffness, R)
+subroutine glob_anel_stiffness_mono_cg4(glob_stiffness, R)
 
   use attenuation,  only: n_sls_attenuation
   use data_mesh,    only: nel_solid
@@ -538,6 +560,12 @@ pure subroutine glob_anel_stiffness_mono_cg4(glob_stiffness, R)
   
   integer :: ielem, j
 
+  !$omp do private(loc_stiffness_s, loc_stiffness_z, &
+  !$omp            r1, r2, r3, r5, &
+  !$omp            yl, v_s_etal, v_s_xil, v_z_etal, v_z_xil, &
+  !$omp            S1s, S2s, S1z, S2z, &
+  !$omp            X1, X2, X3, X4, &
+  !$omp            j)
   do ielem = 1, nel_solid
 
      yl(:) = Y_cg4(:,ielem)
@@ -590,6 +618,7 @@ pure subroutine glob_anel_stiffness_mono_cg4(glob_stiffness, R)
      glob_stiffness(0:4,0:4,ielem,3) = &
             glob_stiffness(0:4,0:4,ielem,3) - loc_stiffness_z
   enddo
+  !$omp end do
 
 end subroutine glob_anel_stiffness_mono_cg4
 !-----------------------------------------------------------------------------------------
