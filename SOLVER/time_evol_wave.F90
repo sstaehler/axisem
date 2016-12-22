@@ -341,17 +341,26 @@ subroutine sf_time_loop_newmark
  
   !$omp parallel default(shared) num_threads(2)
   do iter = 1, niter
-
      !$omp single
      t = t + deltat
      call runtime_info(iter,disp,chi)
-     
+    
+     !$omp end single
+     !$omp sections
+     !$omp section
      chi = chi +  deltat * dchi + half_dt_sq * ddchi0
      
+     !$omp section
      disp(:,:,:,1) = disp(:,:,:,1) + deltat * velo(:,:,:,1) + half_dt_sq * acc0(:,:,:,1)
+     
+     !$omp section
      if (src_type(1) .ne. 'monopole') &
         disp(:,:,:,2) = disp(:,:,:,2) + deltat * velo(:,:,:,2) + half_dt_sq * acc0(:,:,:,2)
+
+     !$omp section
      disp(:,:,:,3) = disp(:,:,:,3) + deltat * velo(:,:,:,3) + half_dt_sq * acc0(:,:,:,3)
+     !$omp end sections
+     !$omp single
         
      if (src_type(1) .ne. 'monopole') &
         call apply_axis_mask_scal(chi, nel_fluid, ax_el_fluid, naxel_fluid) 
@@ -450,28 +459,33 @@ subroutine sf_time_loop_newmark
      iclockcomm = tick(id=idcomm, since=iclockcomm)
 
      call add_source(acc1, stf(iter))
-        
+     
+     !$omp end single
+     !$omp sections
+     !$omp section
      acc1(:,:,:,1) = - inv_mass_rho * acc1(:,:,:,1)
-     
-     if (src_type(1) .ne. 'monopole') &
-        acc1(:,:,:,2) = - inv_mass_rho * acc1(:,:,:,2)
-     
+     velo(:,:,:,1) = velo(:,:,:,1) + half_dt * (acc0(:,:,:,1) + acc1(:,:,:,1))
+     acc0(:,:,:,1) = acc1(:,:,:,1)
+
+     !$omp section
      if (src_type(1) == 'dipole') then 
         ! for the factor 2 compare eq 32 in TNM (2006)
         acc1(:,:,:,3) = - two * inv_mass_rho * acc1(:,:,:,3)
      else
         acc1(:,:,:,3) = - inv_mass_rho * acc1(:,:,:,3)
      endif
-        
-     velo(:,:,:,1) = velo(:,:,:,1) + half_dt * (acc0(:,:,:,1) + acc1(:,:,:,1))
-     if (src_type(1) .ne. 'monopole') &
-        velo(:,:,:,2) = velo(:,:,:,2) + half_dt * (acc0(:,:,:,2) + acc1(:,:,:,2))
      velo(:,:,:,3) = velo(:,:,:,3) + half_dt * (acc0(:,:,:,3) + acc1(:,:,:,3))
-     
-     acc0(:,:,:,1) = acc1(:,:,:,1)
-     if (src_type(1) .ne. 'monopole') &
-        acc0(:,:,:,2) = acc1(:,:,:,2)
      acc0(:,:,:,3) = acc1(:,:,:,3)
+
+     !$omp section
+     if (src_type(1) .ne. 'monopole') then
+        acc1(:,:,:,2) = - inv_mass_rho * acc1(:,:,:,2)
+        velo(:,:,:,2) = velo(:,:,:,2) + half_dt * (acc0(:,:,:,2) + acc1(:,:,:,2))
+        acc0(:,:,:,2) = acc1(:,:,:,2)
+     end if
+     !$omp end sections
+     
+     !$omp single
      
      iclockdump = tick()
      call dump_stuff(iter, iseismo, istrain, isnap, disp, velo, chi, dchi, ddchi0, t)
