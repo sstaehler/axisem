@@ -41,7 +41,7 @@ contains
 
 !-----------------------------------------------------------------------------------------
 !> Wrapper routine to avoid if statements in the timeloop
-pure subroutine glob_stiffness_mono(glob_stiffness,u)
+subroutine glob_stiffness_mono(glob_stiffness,u)
   use data_mesh, only: npol, nel_solid
   
   real(kind=realkind), intent(in)  :: u(0:,0:,:,:)
@@ -57,7 +57,7 @@ end subroutine glob_stiffness_mono
 !-----------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------
-pure subroutine glob_stiffness_mono_4(glob_stiffness,u)
+subroutine glob_stiffness_mono_4(glob_stiffness,u)
 
   use data_mesh, only: nel_solid
   
@@ -80,6 +80,10 @@ pure subroutine glob_stiffness_mono_4(glob_stiffness,u)
   
   integer :: ielem
 
+  !$omp do private(X1, X2, X3, X4,     &
+  !$omp         S1s, S2s, S1z, S2z, &
+  !$omp         V1, V2, V3, V4,     &
+  !$omp         us, uz, uz0)
   do ielem = 1, nel_solid
 
      us(:,:) = u(:,:,ielem,1)
@@ -153,6 +157,7 @@ pure subroutine glob_stiffness_mono_4(glob_stiffness,u)
      glob_stiffness(:,:,ielem,3) = loc_stiffness_z
 
   end do
+!$omp end do
 
 end subroutine glob_stiffness_mono_4
 !-----------------------------------------------------------------------------------------

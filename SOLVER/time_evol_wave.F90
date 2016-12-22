@@ -338,9 +338,11 @@ subroutine sf_time_loop_newmark
   iclockdump = tick()
   call dump_stuff(0, iseismo, istrain, isnap, disp, velo, chi, dchi, ddchi0, t)
   iclockdump = tick(id=iddump, since=iclockdump)
-
+ 
+  !$omp parallel default(shared) num_threads(2)
   do iter = 1, niter
 
+     !$omp single
      t = t + deltat
      call runtime_info(iter,disp,chi)
      
@@ -353,9 +355,13 @@ subroutine sf_time_loop_newmark
         
      if (src_type(1) .ne. 'monopole') &
         call apply_axis_mask_scal(chi, nel_fluid, ax_el_fluid, naxel_fluid) 
-     
+
      iclockstiff = tick()
+     
+     !$omp end single
      call glob_fluid_stiffness(ddchi1, chi) 
+     !$omp single
+
      iclockstiff = tick(id=idstiff, since=iclockstiff)
 
      call bdry_copy2fluid(ddchi1, disp)
@@ -368,10 +374,12 @@ subroutine sf_time_loop_newmark
      iclockcomm = tick(id=idcomm, since=iclockcomm)
         
      iclockstiff = tick()
+     !$omp end single
      select case (src_type(1))
      case ('monopole')
         call apply_axis_mask_onecomp(disp, nel_solid, ax_el_solid, naxel_solid)
         call glob_stiffness_mono(acc1, disp)
+        !$omp single
 
         if (anel_true) then
            iclockanelst = tick()
@@ -379,6 +387,7 @@ subroutine sf_time_loop_newmark
                                          att_coarse_grained)
            iclockanelst = tick(id=idanelst, since=iclockanelst)
         endif
+        !$omp end single
 
      case ('dipole')
         call apply_axis_mask_twocomp(disp, nel_solid, ax_el_solid, naxel_solid)
@@ -402,6 +411,7 @@ subroutine sf_time_loop_newmark
            iclockanelst = tick(id=idanelst, since=iclockanelst)
         endif
      end select
+     !$omp single
      iclockstiff = tick(id=idstiff, since=iclockstiff)
      
      iclockcomm = tick()
@@ -466,8 +476,10 @@ subroutine sf_time_loop_newmark
      iclockdump = tick()
      call dump_stuff(iter, iseismo, istrain, isnap, disp, velo, chi, dchi, ddchi0, t)
      iclockdump = tick(id=iddump, since=iclockdump)
+     !$omp end single
   end do ! time loop
-  
+  !$omp end parallel
+
 end subroutine sf_time_loop_newmark
 !-----------------------------------------------------------------------------------------
 
