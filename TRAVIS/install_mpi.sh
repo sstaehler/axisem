@@ -55,7 +55,7 @@ case "$os" in
                     ./autogen.sh
                     mkdir build ; cd build
                     ../configure --prefix=$TRAVIS_ROOT CC=$PRK_CC CXX=$PRK_CXX FC=$PRK_FC
-                    make -j4
+                    make -sj4 
                     make install
                 else
                     echo "MPICH installed..."
@@ -76,7 +76,7 @@ case "$os" in
                       --without-alps --without-munge --without-sge --without-loadleveler \
                       --without-tm --without-lsf --without-slurm --without-pvfs2 --without-plfs \
                       --without-cuda --disable-oshmem --disable-mpi-io  --disable-io-romio
-                    make -j4
+                    make -sj4
                     make install
                 else
                     echo "OpenMPI installed..."
