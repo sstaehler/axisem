@@ -11,22 +11,10 @@ env:
   matrix:
     - GFORTRAN_VERSION=4.8
     - GFORTRAN_VERSION=4.9
+    - GFORTRAN_VERSION=4.9
+      EXTRAFLAGS=-fopenmp
     - GFORTRAN_VERSION=5 
     - GFORTRAN_VERSION=6
-
-# addons:
-#   apt:
-#     sources:
-#       - ubuntu-toolchain-r-test
-#     packages:
-#       - gfortran-4.8
-#       - gfortran-4.9
-#       - gfortran-5
-#       - gfortran-6
-#       - g++-4.8
-#       - g++-4.9
-#       - g++-5
-#       - g++-6
 
 before_install:
   - export MINICONDA=$HOME/miniconda
@@ -54,22 +42,20 @@ before_install:
   - export TRAVIS_ROOT=$HOME/travis
   - mkdir -p $TRAVIS_ROOT
   # Get and install OpenMPI
-  - ./TRAVIS/install_mpi.sh $TRAVIS_ROOT $MPI_IMPL $GFORTRAN_VERSION #> LOG_OpenMPI.log
+  - ./TRAVIS/install_mpi.sh $TRAVIS_ROOT $MPI_IMPL $GFORTRAN_VERSION > LOG_OpenMPI.log
   # Get and install FFTW3
   - ./TRAVIS/install_fftw.sh $TRAVIS_ROOT $GFORTRAN_VERSION > LOG_FFTW.log
   # Get and install NetCDF4
   - ./TRAVIS/install_netcdf.sh $TRAVIS_ROOT $GFORTRAN_VERSION > LOG_NetCDF4.log
+  - export PATH="$TRAVIS_ROOT/bin:$PATH"
 
-install:
-  #- gfortran-$GFORTRAN_VERSION -v
-  #- gfortran-$GFORTRAN_VERSION hello_world.f90 -o hello_world.x
+install: true
   
 script:
-  - |
-    cd TESTING;
-    python test_nightly_axisem.py -t 1
-    python test_nightly_axisem.py -t 2
-    python test_nightly_axisem.py -t 3
+  - cd TESTING;
+  - python test_nightly_axisem.py -t 1
+  - python test_nightly_axisem.py -t 2
+  - python test_nightly_axisem.py -t 3
 
 after_success:
 
