@@ -645,9 +645,8 @@ def PyAxi(**kwargs):
                             temp = killprocess('axisem')
                             return
 
-                    if input['verbose'] == 'Y':
-                        print print_output
-                    time.sleep(2)
+                    print print_output
+                    time.sleep(30)
 
                 if  test==-1:
                     solvercrashed = 1
