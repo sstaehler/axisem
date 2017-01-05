@@ -11,10 +11,16 @@ env:
   matrix:
     - GFORTRAN_VERSION=4.8
     - GFORTRAN_VERSION=4.9
+    - GFORTRAN_VERSION=5 
+    - GFORTRAN_VERSION=6
+    - GFORTRAN_VERSION=4.8
+      EXTRAFLAGS=-fopenmp
     - GFORTRAN_VERSION=4.9
       EXTRAFLAGS=-fopenmp
     - GFORTRAN_VERSION=5 
+      EXTRAFLAGS=-fopenmp
     - GFORTRAN_VERSION=6
+      EXTRAFLAGS=-fopenmp
 
 before_install:
   - export MINICONDA=$HOME/miniconda
@@ -24,7 +30,7 @@ before_install:
   - command -v conda >/dev/null || { wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
      bash miniconda.sh -b -f -p $MINICONDA; }
   - conda update --yes conda
-  - conda remove --yes -n condaenv --all
+  - conda remove --yes -n condaenv --all || echo "Conda not yet installed"
   - conda create --yes -n condaenv python=2.7
   - conda install --yes -n condaenv pip
   - source activate condaenv
